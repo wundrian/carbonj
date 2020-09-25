@@ -217,7 +217,7 @@ class DataPointArchiveRocksDB
 
             try
             {
-                int mId = DataPointRecord.toMetricId( key );
+                long mId = DataPointRecord.toMetricId( key );
                 int ts = DataPointRecord.toTimestamp( key );
                 msg = "Failed to remove record. db [" + dbName + "], key [" + mId + ":" + ts + "]";
             }

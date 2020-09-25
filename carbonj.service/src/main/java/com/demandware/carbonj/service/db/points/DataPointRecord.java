@@ -31,13 +31,14 @@ class DataPointRecord
         return Double.longBitsToDouble( Longs.fromByteArray( valueBytes ) );
     }
 
-    public static int toMetricId(byte[] keyBytes)
+    public static Long toMetricId(byte[] keyBytes)
     {
-        return Ints.fromBytes( keyBytes[0], keyBytes[1], keyBytes[2], keyBytes[3] );
+        return Longs.fromBytes( keyBytes[0], keyBytes[1], keyBytes[2], keyBytes[3], keyBytes[4],
+                keyBytes[5], keyBytes[6], keyBytes[7]);
     }
 
     public static int toTimestamp(byte[] keyBytes)
     {
-        return Ints.fromBytes( keyBytes[4], keyBytes[5], keyBytes[6], keyBytes[7]);
+        return Ints.fromBytes( keyBytes[8], keyBytes[9], keyBytes[10], keyBytes[11]);
     }
 }
