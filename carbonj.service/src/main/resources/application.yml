@@ -11,7 +11,8 @@ spring:
     active: dev
 metrics:
   store:
-    enabled: false
+    enabled: true
+    longId: false
     dataDir: work/carbonj-data
     stagingDir: work/carbonj-staging
     checkPoint:

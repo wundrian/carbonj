@@ -17,14 +17,26 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 class IdRecordSerializer
                 implements RecordSerializer<Long, IdRecord>
 {
+    private boolean longId;
     public IdRecordSerializer()
     {
+        this(false);
+    }
+
+    public IdRecordSerializer(boolean longId)
+    {
+        this.longId = longId;
     }
 
     @Override
     public Long key( byte[] keyBytes )
     {
-        return Longs.fromByteArray( keyBytes );
+        if(longId)
+        {
+            return Longs.fromByteArray( keyBytes );
+        }
+        Integer intKey = Ints.fromByteArray(keyBytes);
+        return intKey.longValue();
     }
 
     @Override
@@ -46,7 +58,10 @@ class IdRecordSerializer
     @Override
     public byte[] keyBytes(Long key)
     {
-        return Longs.toByteArray(key);
+        if(longId) {
+            return Longs.toByteArray(key);
+        }
+        return Ints.toByteArray(key.intValue());
     }
 
     @Override

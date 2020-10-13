@@ -14,6 +14,8 @@ import com.demandware.carbonj.service.db.util.FileUtils;
 import com.demandware.carbonj.service.engine.StorageAggregationRulesLoader;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,9 @@ import static com.demandware.carbonj.service.config.ConfigUtils.locateConfigFile
 @Configuration
 public class cfgMetricIndex
 {
+    @Value( "${metrics.store.longId:false}" )
+    private boolean longId;
+
     @Value( "${metrics.store.indexDir:}" )
     private String indexDir = null;
 
@@ -69,19 +74,21 @@ public class cfgMetricIndex
     @Autowired
     MetricRegistry metricRegistry;
 
-
+    // ToDo Remove this
+    private static Logger log = LoggerFactory.getLogger( cfgMetricIndex.class );
     @Bean( name = "metricNameIndexStore" )
     IndexStore<String, NameRecord> metricNameIndexStore()
     {
+        log.info("Long Id support: " +  longId );
         File dbDir = dbDir( "index-name" );
-        return new IndexStoreRocksDB<>( metricRegistry, "index-name", dbDir, new NameRecordSerializer() );
+        return new IndexStoreRocksDB<>( metricRegistry, "index-name", dbDir, new NameRecordSerializer(longId));
     }
 
     @Bean( name = "metricIdIndexStore" )
     IndexStore<Long, IdRecord> metricIdIndexStore()
     {
         File dbDir = dbDir( "index-id" );
-        return new IndexStoreRocksDB<>( metricRegistry,"index-id", dbDir, new IdRecordSerializer() );
+        return new IndexStoreRocksDB<>( metricRegistry,"index-id", dbDir, new IdRecordSerializer(longId));
     }
 
     @Bean
