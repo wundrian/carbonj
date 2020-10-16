@@ -49,7 +49,7 @@ public class _Archives extends BaseTest
     public void setUp()
     {
         File dbDirFile = Files.createTempDir();
-        index = IndexUtils.metricIndex( dbDirFile );
+        index = IndexUtils.metricIndex( dbDirFile, false );
         index.open();
         StagingFiles sFiles = new StagingFiles(metricRegistry, new File( dbDirFile, "staging" ), new SystemSort(), index );
         DataPointStagingStore stagingStore = new DataPointStagingStore( metricRegistry, sFiles, 1000, 1, 1, 1, 100, 30, 3);

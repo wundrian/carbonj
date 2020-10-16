@@ -6,25 +6,18 @@
  */
 package com.demandware.carbonj.service.db.index;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.function.Consumer;
-
 import com.codahale.metrics.MetricRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.rocksdb.CompressionType;
-import org.rocksdb.Options;
-import org.rocksdb.ReadOptions;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.TtlDB;
-
 import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.primitives.UnsignedBytes;
+import com.google.common.primitives.SignedBytes;
+import org.rocksdb.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.function.Consumer;
 
 class IndexStoreRocksDB<K, R extends Record<K>>
     implements IndexStore<K, R>
@@ -88,7 +81,8 @@ class IndexStoreRocksDB<K, R extends Record<K>>
 
     private static int keyCompare( byte[] keyBytes1, byte[] keyBytes2 )
     {
-        return UnsignedBytes.lexicographicalComparator().compare( keyBytes1, keyBytes2 );
+        // Since few of the old shards are in negative, ids are no more unsigned
+        return SignedBytes.lexicographicalComparator().compare( keyBytes1, keyBytes2 );
     }
 
     @Override
@@ -104,7 +98,18 @@ class IndexStoreRocksDB<K, R extends Record<K>>
             }
             else
             {
-                iter.seek( recSerializer.keyBytes( startKey ) );
+                // Rocksdb jni does not support min negative value - Integer_MAX_VALUE + 1.
+                // This is a work around to seek to the first value.
+                // Would like to change the signature of the method to concrete type - long but
+                // that needs lot of changes.
+                if((long)startKey == 0)
+                {
+                    iter.seekToFirst();
+                }
+                else
+                {
+                    iter.seek( recSerializer.keyBytes( startKey ) );
+                }
             }
             for ( ; iter.isValid(); iter.next() )
             {

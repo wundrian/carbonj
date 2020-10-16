@@ -21,19 +21,19 @@ import java.io.File;
 public class IndexUtils
 {
     static MetricRegistry metricRegistry = new MetricRegistry();
-    private static IndexStore<String, NameRecord> metricNameIndexStore( File dbDir )
+    private static IndexStore<String, NameRecord> metricNameIndexStore( File dbDir, boolean longId )
     {
-        return new IndexStoreRocksDB<>( metricRegistry, "index-name", dir( dbDir, "index-name" ), new NameRecordSerializer() );
+        return new IndexStoreRocksDB<>( metricRegistry, "index-name", dir( dbDir, "index-name" ), new NameRecordSerializer(longId) );
     }
 
-    private static IndexStore<Long, IdRecord> metricIdIndexStore( File dbDir )
+    private static IndexStore<Long, IdRecord> metricIdIndexStore( File dbDir, boolean longId )
     {
-        return new IndexStoreRocksDB<>(metricRegistry, "index-id", dir( dbDir, "index-id" ), new IdRecordSerializer() );
+        return new IndexStoreRocksDB<>(metricRegistry, "index-id", dir( dbDir, "index-id" ), new IdRecordSerializer(longId) );
     }
 
-    public static MetricIndex metricIndex( File dbDir )
+    public static MetricIndex metricIndex( File dbDir, boolean longId )
     {
-        return metricIndex( metricNameIndexStore( dbDir ), metricIdIndexStore( dbDir ), databaseMetrics() );
+        return metricIndex( metricNameIndexStore( dbDir, longId ), metricIdIndexStore( dbDir, longId ), databaseMetrics() );
     }
 
     private static MetricIndex metricIndex( IndexStore<String, NameRecord> nameIndex,
@@ -43,7 +43,7 @@ public class IndexUtils
         StorageAggregationPolicySource policySource = new StorageAggregationPolicySource( rulesLoader );
 
         return new MetricIndexImpl( metricRegistry,"doesnt-exist.conf", nameIndex, idIndex, dbMetrics, 10000, 60,
-                new NameUtils(),  policySource, 2000,120, false);
+                new NameUtils(),  policySource, 2000,120, false, false);
     }
 
     private static DatabaseMetrics databaseMetrics()

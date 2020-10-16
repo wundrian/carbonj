@@ -21,6 +21,8 @@ public interface MetricIndex
 {
     void open();
 
+    void setMaxId(long maxId);
+
     void close();
 
     /**

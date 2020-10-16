@@ -112,7 +112,7 @@ public class cfgMetricIndex
     {
         MetricIndexImpl metricIndex = new MetricIndexImpl(metricRegistry, metricStoreConfigFile, nameIndex, idIndex, dbMetrics,
                 nameIndexMaxCacheSize, metricCacheExpireAfterAccessInMinutes, nameUtils, policySource,
-                nameIndexQueryCacheMaxSize, expireAfterWriteQueryCacheInSeconds, enableIdCache);
+                nameIndexQueryCacheMaxSize, expireAfterWriteQueryCacheInSeconds, enableIdCache, longId);
         s.scheduleWithFixedDelay(metricIndex::reload, 300, 300, TimeUnit.SECONDS );
         return metricIndex;
     }

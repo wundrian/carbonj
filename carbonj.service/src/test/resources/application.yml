@@ -9,7 +9,7 @@ dw:
 metrics:
     store:
       enabled: true
-      longId: true
+      longId: false
       dataDir: work/carbonj-data
       checkPoint:
         dir: work/carbonj-checkpoint
@@ -38,7 +38,14 @@ logging:
 
 ---
 spring:
-  profiles: testLongInt
+  profiles: testMaxInt
+metrics:
+  store:
+    longId: false
+
+---
+spring:
+  profiles: testLongId
 metrics:
   store:
     longId: true

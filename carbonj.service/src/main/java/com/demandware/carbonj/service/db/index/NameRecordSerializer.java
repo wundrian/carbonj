@@ -22,11 +22,6 @@ class NameRecordSerializer
 {
     private boolean longId;
 
-    public NameRecordSerializer()
-    {
-        this(false);
-    }
-
     public NameRecordSerializer(boolean longId)
     {
         this.longId = longId;
@@ -177,6 +172,7 @@ class NameRecordSerializer
     }
     private byte[] valueBytesWithLongId(NameRecord e)
     {
+        // leaving the first byte for versioning and leafe node indication
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         if( e.isLeaf())
         {

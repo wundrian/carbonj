@@ -95,6 +95,8 @@ public class MetricIndexImpl implements MetricIndex {
      */
     private volatile boolean enforceMaxSeriesPerRequest;
 
+    private boolean longId;
+
     private class DeleteResult extends DeleteAPIResult
     {
         public List<Metric> metrics = new ArrayList<>();
@@ -105,7 +107,8 @@ public class MetricIndexImpl implements MetricIndex {
                             DatabaseMetrics dbMetrics, int nameIndexMaxCacheSize, int expireAfterAccessInMinutes,
                             NameUtils nameUtils, StorageAggregationPolicySource aggrPolicySource,
                             int nameIndexQueryCacheMaxSize, int expireAfterWriteQueryCacheInSeconds,
-                            boolean idCacheEnabled) {
+                            boolean idCacheEnabled,
+                            boolean longId) {
         this.metricRegistry = metricRegistry;
         this.metricsStoreConfigFile = metricsStoreConfigFile;
         this.nameUtils = Preconditions.checkNotNull(nameUtils);
@@ -115,6 +118,7 @@ public class MetricIndexImpl implements MetricIndex {
         this.retentionPolicyConf = new RetentionPolicyConf();
         this.insertNewMetricIdTimer = metricRegistry.timer("db.index.insertNewMetricId.time");
         this.lastAssignedMetricIdGauge = registerLastAssignedMetricIdGauge();
+        this.longId = longId;
         loadFromConfigFile(metricsStoreConfigFile);
 
         this.metricCache =
@@ -318,7 +322,13 @@ public class MetricIndexImpl implements MetricIndex {
         log.info( "Loading maxMetricId..." );
         Long maxId = findMaxMetricId(); // should not be null because root node is inserted first if index is empty.
         log.info( "maxMetricId=" + maxId );
-        this.nextMetricId = new AtomicLong( maxId + 1 );
+        setMaxId(maxId);
+    }
+
+    @Override
+    public void setMaxId(long maxId)
+    {
+        this.nextMetricId = new AtomicLong( maxId + 1);
         log.info( "nextMetricId=" + this.nextMetricId );
     }
 
@@ -766,7 +776,10 @@ public class MetricIndexImpl implements MetricIndex {
 
     private long nextMetricId()
     {
-        return this.nextMetricId.getAndIncrement();
+        // Need this int value conversion when longId = false. Without this cache and store values
+        // reflect different ids when the id goes over Integer.MAX_VALUE.
+        // Example: for the value 2147483649 without conversion, store will have id -2147483647 and cache will have 2147483649
+        return longId ? this.nextMetricId.getAndIncrement() : ((Long)this.nextMetricId.getAndIncrement()).intValue();
     }
 
     private String[] pathsForMetricName( String name )
@@ -1023,6 +1036,10 @@ public class MetricIndexImpl implements MetricIndex {
     @Override
     public long scanNames( long start, long end, Consumer<Metric> c )
     {
+        if(longId) {
+            start = (int)start;
+            end = (int)end;
+        }
         return idIndex.scan( start, end, r -> c.accept( getMetric( r.metricName() ) ) );
     }
 

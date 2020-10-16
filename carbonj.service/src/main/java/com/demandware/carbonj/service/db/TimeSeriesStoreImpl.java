@@ -105,6 +105,8 @@ public class TimeSeriesStoreImpl implements TimeSeriesStore
 
     private volatile long logNoOfSeriesThreshold;
 
+    private boolean longId;
+
     public static ThreadPoolExecutor newSerialTaskQueue(int queueSize) {
         ThreadFactory tf =
                 new ThreadFactoryBuilder()
@@ -142,7 +144,8 @@ public class TimeSeriesStoreImpl implements TimeSeriesStore
                                ThreadPoolExecutor heavyQueryTaskQueue, ThreadPoolExecutor serialTaskQueue,
                                DataPointStore pointStore, DatabaseMetrics dbMetrics,
                                boolean batchedSeriesRetrieval, int batchedSeriesSize, boolean dumpIndex,
-                               File dumpIndexFile, int maxNonLeafPointsLoggedPerMin, String metricsStoreConfigFile) {
+                               File dumpIndexFile, int maxNonLeafPointsLoggedPerMin, String metricsStoreConfigFile,
+                               boolean longId) {
         this.nameIndex = Preconditions.checkNotNull(nameIndex);
         this.eventLogger = eventLogger;
         this.pointStore = Preconditions.checkNotNull(pointStore);
@@ -154,6 +157,7 @@ public class TimeSeriesStoreImpl implements TimeSeriesStore
         this.dumpIndex = dumpIndex;
         this.dumpIndexFile = dumpIndexFile;
         this.nonLeafPointsLogQuota = new Quota(maxNonLeafPointsLoggedPerMin, 60);
+        this.longId = longId;
 
 
         rejectedCounter = metricRegistry.counter(
@@ -664,7 +668,14 @@ public class TimeSeriesStoreImpl implements TimeSeriesStore
     @Override
     public void scanMetrics( Consumer<Metric> m )
     {
-        scanMetrics( 0, Integer.MAX_VALUE, m );
+        if(longId)
+        {
+            scanMetrics( 0, Long.MAX_VALUE, m );
+        }
+        else
+        {
+            scanMetrics( 0, Integer.MAX_VALUE, m );
+        }
     }
 
     @Override
