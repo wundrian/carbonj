@@ -1036,10 +1036,6 @@ public class MetricIndexImpl implements MetricIndex {
     @Override
     public long scanNames( long start, long end, Consumer<Metric> c )
     {
-        if(longId) {
-            start = (int)start;
-            end = (int)end;
-        }
         return idIndex.scan( start, end, r -> c.accept( getMetric( r.metricName() ) ) );
     }
 
