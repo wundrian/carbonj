@@ -17,8 +17,8 @@ import static org.junit.Assert.assertEquals;
 
 public class _MaxIntTest extends AbstractCarbonJ_StoreTest
 {
-    private static final long maxLongId = (long)2147483647 + 2;
-    private static final int maxIntId = 2147483647 + 2;
+    private static final long maxLongId = (long)2147483647;
+    private static final int maxIntId = 2147483647;
 
     @Test
     public void testMaxIntId() {
@@ -61,5 +61,25 @@ public class _MaxIntTest extends AbstractCarbonJ_StoreTest
         assertEquals("a.2", metricIndex.getMetricName(maxIntId + 2));
         assertEquals("b.1", metricIndex.getMetricName(maxIntId + 3));
         assertEquals("b.2", metricIndex.getMetricName(maxIntId + 4));
+    }
+
+    @Test
+    public void testMaxIdWithCrossingIntMax() {
+        metricIndex.setMaxId(maxLongId - 2);
+        List<DataPoint> dps = Arrays.asList( new DataPoint( "a.1", 1.0f, DataPoint.align2Min( new DateTime() ) ),
+                new DataPoint( "a.2", 1.0f, DataPoint.align2Min( new DateTime() ) ),
+                new DataPoint( "b.1", 2.0f, DataPoint.align2Min( new DateTime() ) ),
+                new DataPoint( "b.2", 3.0f, DataPoint.align2Min( new DateTime() ) ),
+                new DataPoint( "b.3", 4.0f, DataPoint.align2Min( new DateTime() ) ),
+                new DataPoint( "b.4", 4.0f, DataPoint.align2Min( new DateTime() ) ));
+        cjClient.send( dps );
+        drain();
+        assertEquals( dps, cjClient.dumpLines( "60s24h", null, null, 0, Integer.MAX_VALUE ) );
+        assertEquals("a.1", metricIndex.getMetricName(maxIntId - 1));
+        assertEquals("a.2", metricIndex.getMetricName(maxIntId));
+        assertEquals("b.1", metricIndex.getMetricName(maxIntId + 1));
+        assertEquals("b.2", metricIndex.getMetricName(maxIntId + 2));
+        assertEquals("b.3", metricIndex.getMetricName(maxIntId + 3));
+        assertEquals("b.4", metricIndex.getMetricName(maxIntId + 4));
     }
 }

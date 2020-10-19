@@ -114,7 +114,9 @@ class IndexStoreRocksDB<K, R extends Record<K>>
             for ( ; iter.isValid(); iter.next() )
             {
                 byte[] key = iter.key();
-                if ( null != endKey && keyCompare( key, endKeyBytes ) >= 0 )
+                // Don't stop after reaching Integer.Max_VALUE as there may be
+                // negative ids after Integer overflow
+                if ( null != endKey && keyCompare( key, endKeyBytes ) > 0 )
                 {
                     break;
                 }
