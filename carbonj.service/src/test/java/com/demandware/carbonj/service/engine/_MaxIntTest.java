@@ -56,7 +56,7 @@ public class _MaxIntTest extends AbstractCarbonJ_StoreTest
                 new DataPoint( "b.2", 3.0f, DataPoint.align2Min( new DateTime() ) ) );
         cjClient.send( dps );
         drain();
-        assertEquals( dps, cjClient.dumpLines( "60s24h", null, null, 0, Integer.MAX_VALUE ) );
+        assertEquals( dps, cjClient.dumpLines( DB_60S, null, null, 0, Integer.MAX_VALUE ) );
         assertEquals("a.1", metricIndex.getMetricName(maxIntId + 1));
         assertEquals("a.2", metricIndex.getMetricName(maxIntId + 2));
         assertEquals("b.1", metricIndex.getMetricName(maxIntId + 3));
@@ -74,7 +74,7 @@ public class _MaxIntTest extends AbstractCarbonJ_StoreTest
                 new DataPoint( "b.4", 4.0f, DataPoint.align2Min( new DateTime() ) ));
         cjClient.send( dps );
         drain();
-        assertEquals( dps, cjClient.dumpLines( "60s24h", null, null, 0, Integer.MAX_VALUE ) );
+        assertEquals( dps, cjClient.dumpLines( DB_60S, null, null, 0, Integer.MAX_VALUE ) );
         assertEquals("a.1", metricIndex.getMetricName(maxIntId - 1));
         assertEquals("a.2", metricIndex.getMetricName(maxIntId));
         assertEquals("b.1", metricIndex.getMetricName(maxIntId + 1));
