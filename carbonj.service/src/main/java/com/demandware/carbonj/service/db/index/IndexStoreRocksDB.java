@@ -92,24 +92,17 @@ class IndexStoreRocksDB<K, R extends Record<K>>
         byte[] endKeyBytes = null == endKey ? null : recSerializer.keyBytes( endKey );
         try (RocksIterator iter = db.newIterator( new ReadOptions() ))
         {
-            if ( null == startKey )
+            // Rocksdb jni does not support min negative value - Integer_MAX_VALUE + 1.
+            // This is a work around to seek to the first value.
+            // Would like to change the signature of the method to concrete type - long but
+            // that needs lot of changes.
+            if ( null == startKey  || (long)startKey < 0)
             {
                 iter.seekToFirst();
             }
             else
             {
-                // Rocksdb jni does not support min negative value - Integer_MAX_VALUE + 1.
-                // This is a work around to seek to the first value.
-                // Would like to change the signature of the method to concrete type - long but
-                // that needs lot of changes.
-                if((long)startKey == 0)
-                {
-                    iter.seekToFirst();
-                }
-                else
-                {
-                    iter.seek( recSerializer.keyBytes( startKey ) );
-                }
+                iter.seek( recSerializer.keyBytes( startKey ) );
             }
             for ( ; iter.isValid(); iter.next() )
             {
